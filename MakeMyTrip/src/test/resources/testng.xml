@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="MakeMyTrip Test Suite" verbose="1">
+    <listeners>
+        <listener class-name="org.testng.reporters.EmailableReporter"/>
+    </listeners>
+    <test name="MakeMyTrip Logo Test (Firefox)">
+        <classes>
+            <class name="com.sdet.tests.MakeMyTripLogoTest"/>
+        </classes>
+    </test>
+    <test name="MakeMyTrip Flights Test (Chrome)">
+        <classes>
+            <class name="com.sdet.tests.MakeMyTripFlightsTest"/>
+        </classes>
+    </test>
+</suite>
