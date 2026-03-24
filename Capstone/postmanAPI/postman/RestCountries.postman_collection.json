@@ -1,0 +1,112 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "RestCountries — Subregion API",
+		"description": "GET https://restcountries.com/v3.1/subregion/{subregion}\n\nRun single request with collection variables, or use Runner with `data/subregions.csv` for data-driven runs.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GET countries by subregion",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const sub = pm.iterationData.get('subregion') || pm.collectionVariables.get('subregion');",
+							"if (sub) {",
+							"    pm.collectionVariables.set('subregion_encoded', encodeURIComponent(sub));",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Body is non-empty JSON array', function () {",
+							"    pm.response.to.be.withBody;",
+							"    const data = pm.response.json();",
+							"    pm.expect(data).to.be.an('array');",
+							"    pm.expect(data.length).to.be.above(0);",
+							"});",
+							"",
+							"pm.test('Each item has subregion matching request (when present)', function () {",
+							"    const data = pm.response.json();",
+							"    const expected = pm.iterationData.get('subregion') || pm.collectionVariables.get('subregion');",
+							"    if (!expected) return;",
+							"    data.forEach(function (country) {",
+							"        pm.expect(country.subregion, JSON.stringify(country.name)).to.eql(expected);",
+							"    });",
+							"});",
+							"",
+							"pm.test('First country has name.common and region', function () {",
+							"    const data = pm.response.json();",
+							"    pm.expect(data[0].name).to.have.property('common');",
+							"    pm.expect(data[0].region).to.be.a('string');",
+							"});",
+							"",
+							"const expectedRegion = pm.iterationData.get('expected_region');",
+							"if (expectedRegion) {",
+							"    pm.test('Region matches dataset expected_region', function () {",
+							"        const data = pm.response.json();",
+							"        data.forEach(function (country) {",
+							"            pm.expect(country.region).to.eql(expectedRegion);",
+							"        });",
+							"    });",
+							"}",
+							"",
+							"const sample = pm.iterationData.get('sample_country');",
+							"if (sample) {",
+							"    pm.test('Response includes sample country from dataset', function () {",
+							"        const data = pm.response.json();",
+							"        const names = data.map(c => c.name && c.name.common);",
+							"        pm.expect(names).to.include(sample);",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "https://restcountries.com/v3.1/subregion/{{subregion_encoded}}",
+					"protocol": "https",
+					"host": [
+						"restcountries",
+						"com"
+					],
+					"path": [
+						"v3.1",
+						"subregion",
+						"{{subregion_encoded}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "subregion",
+			"value": "Northern Europe"
+		},
+		{
+			"key": "subregion_encoded",
+			"value": "Northern%20Europe"
+		}
+	]
+}

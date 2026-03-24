@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project xmlns:con="http://eviware.com/soapui/config" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    activeEnvironment="Default"
+                    id="f6c2b8d0-7f3a-4c21-9d01-4a5b6c7d8e90"
+                    name="RestCountries-Subregion"
+                    resourceRoot="${projectDir}"
+                    soapui-version="5.7.2">
+  <con:settings/>
+  <con:properties/>
+  <con:interface xsi:type="con:RestService" id="11111111-1111-1111-1111-111111111111"
+                 wadlVersion="http://wadl.dev.java.net/2009/02"
+                 name="https://restcountries.com" type="rest">
+    <con:settings/>
+    <con:definitionCache type="TEXT" rootPart=""/>
+    <con:endpoints>
+      <con:endpoint>https://restcountries.com</con:endpoint>
+    </con:endpoints>
+    <con:resource name="Subregion" path="/v3.1/subregion/{subregion}" id="22222222-2222-2222-2222-222222222222">
+      <con:settings/>
+      <con:parameters>
+        <con:parameter required="true">
+          <con:name>subregion</con:name>
+          <con:value/>
+          <con:style>TEMPLATE</con:style>
+        </con:parameter>
+      </con:parameters>
+      <con:method name="GET countries" method="GET" id="33333333-3333-3333-3333-333333333333">
+        <con:settings/>
+        <con:request name="GET countries" id="44444444-4444-4444-4444-444444444444" mediaType="application/json">
+          <con:settings/>
+          <con:endpoint>https://restcountries.com</con:endpoint>
+          <con:request/>
+          <con:originalUri>https://restcountries.com/v3.1/subregion/Northern%20Europe</con:originalUri>
+          <con:credentials>
+            <con:authType>No Authorization</con:authType>
+          </con:credentials>
+          <con:jmsConfig JMSDeliveryMode="PERSISTENT"/>
+          <con:jmsPropertyConfig/>
+          <con:parameters>
+            <con:entry key="subregion" value="Northern%20Europe" xmlns="http://eviware.com/soapui/config"/>
+          </con:parameters>
+          <con:parameterOrder>subregion</con:parameterOrder>
+        </con:request>
+      </con:method>
+    </con:resource>
+  </con:interface>
+  <con:testSuite id="55555555-5555-5555-5555-555555555555" name="Subregion Tests">
+    <con:settings/>
+    <con:properties/>
+    <con:runType>SEQUENTIAL</con:runType>
+    <con:testCase failOnError="true" failTestCaseOnErrors="true" id="66666666-6666-6666-6666-666666666666" keepSession="false" name="Excel-driven GET subregion" searchProperties="true">
+      <con:settings/>
+      <con:properties/>
+      <con:testStep type="groovy" name="Read MS-Excel and set properties" id="77777777-7777-7777-7777-777777777777">
+        <con:settings/>
+        <con:config>
+          <script><![CDATA[/* Apache POI JARs required in SoapUI bin/ext — see ../SETUP.txt */
+import org.apache.poi.ss.usermodel.*
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import java.net.URLEncoder
+
+def pathStr = testRunner.testCase.testSuite.project.path
+def projectDir = pathStr ? new File(pathStr).parentFile : new File(System.getProperty("user.dir"))
+def excelFile = new File(projectDir, "data/testdata.xlsx")
+assert excelFile.exists() : "Excel not found: ${excelFile.absolutePath}. Open project from soapui folder."
+
+def fis = new FileInputStream(excelFile)
+def wb = new XSSFWorkbook(fis)
+try {
+  Sheet sheet = wb.getSheetAt(0)
+  Row header = sheet.getRow(0)
+  assert header : "No header row"
+  def fmt = new DataFormatter()
+  def idx = [:]
+  header.each { Cell c ->
+    if (c != null) {
+      def key = fmt.formatCellValue(c).trim().toLowerCase()
+      idx[key] = c.columnIndex
+    }
+  }
+  Row row = sheet.getRow(1)
+  assert row : "No data row"
+  def cell = { String col ->
+    Integer i = idx[col.toLowerCase()]
+    if (i == null) return null
+    Cell c = row.getCell(i)
+    return c == null ? "" : fmt.formatCellValue(c).trim()
+  }
+  def sub = cell("subregion")
+  def region = cell("expected_region")
+  def sample = cell("sample_country")
+  testRunner.testCase.setPropertyValue("subregionRaw", sub ?: "")
+  testRunner.testCase.setPropertyValue("expectedRegion", region ?: "")
+  testRunner.testCase.setPropertyValue("sampleCountry", sample ?: "")
+  def enc = URLEncoder.encode(sub, "UTF-8").replace("+", "%20")
+  testRunner.testCase.setPropertyValue("subregionEncoded", enc)
+  log.info("Excel -> subregion=${sub}, expectedRegion=${region}, sampleCountry=${sample}")
+} finally {
+  wb.close()
+  fis.close()
+}
+]]></script>
+        </con:config>
+      </con:testStep>
+      <con:testStep type="restrequest" name="GET subregion countries" id="88888888-8888-8888-8888-888888888888">
+        <con:settings/>
+        <con:config service="https://restcountries.com" resourcePath="/v3.1/subregion/{subregion}" methodName="GET countries" xsi:type="con:RestRequestStep">
+          <con:restRequest name="GET subregion countries" id="99999999-9999-9999-9999-999999999999" mediaType="application/json">
+            <con:settings/>
+            <con:endpoint>https://restcountries.com</con:endpoint>
+            <con:request/>
+            <con:originalUri>https://restcountries.com/v3.1/subregion/Northern%20Europe</con:originalUri>
+            <con:assertion type="Valid HTTP Status Codes" name="HTTP 200" id="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa">
+              <con:configuration>
+                <codes>200</codes>
+              </con:configuration>
+            </con:assertion>
+            <con:assertion type="JsonPath Existence Match" name="Has first country name" id="cccccccc-cccc-cccc-cccc-cccccccccccc">
+              <con:configuration>
+                <path>$[0].name.common</path>
+                <content>true</content>
+                <allowWildcards>false</allowWildcards>
+                <ignoreNamspaceDifferences>false</ignoreNamspaceDifferences>
+                <ignoreComments>false</ignoreComments>
+              </con:configuration>
+            </con:assertion>
+            <con:credentials>
+              <con:authType>No Authorization</con:authType>
+            </con:credentials>
+            <con:jmsConfig JMSDeliveryMode="PERSISTENT"/>
+            <con:jmsPropertyConfig/>
+            <con:parameters>
+              <con:entry key="subregion" value="${#TestCase#subregionEncoded}" xmlns="http://eviware.com/soapui/config"/>
+            </con:parameters>
+            <con:parameterOrder>subregion</con:parameterOrder>
+          </con:restRequest>
+        </con:config>
+      </con:testStep>
+      <con:testStep type="groovy" name="Groovy assertions on response" id="dddddddd-dddd-dddd-dddd-dddddddddddd">
+        <con:settings/>
+        <con:config>
+          <script><![CDATA[import groovy.json.JsonSlurper
+
+def rawSub = testRunner.testCase.getPropertyValue("subregionRaw")
+def expReg = testRunner.testCase.getPropertyValue("expectedRegion")
+def sample = testRunner.testCase.getPropertyValue("sampleCountry")
+def responseJson = context.expand('${GET subregion countries#Response}')
+
+assert responseJson : "Empty response"
+def data = new JsonSlurper().parseText(responseJson)
+assert data instanceof List : "Expected JSON array"
+assert data.size() > 0 : "Expected at least one country"
+
+data.each { c ->
+  assert c.subregion == rawSub : "subregion mismatch for ${c?.name?.common}: ${c.subregion} vs ${rawSub}"
+  if (expReg) {
+    assert c.region == expReg : "region mismatch for ${c?.name?.common}"
+  }
+}
+
+if (sample) {
+  def names = data.collect { it?.name?.common }.findAll { it }
+  assert names.contains(sample) : "Expected sample country ${sample} in response; got ${names.take(5)}..."
+}
+log.info("Groovy validation passed (${data.size()} countries).")
+]]></script>
+        </con:config>
+      </con:testStep>
+      <con:report/>
+    </con:testCase>
+    <con:report/>
+  </con:testSuite>
+  <con:savedTestScripts/>
+  <con:report/>
+</con:soapui-project>
