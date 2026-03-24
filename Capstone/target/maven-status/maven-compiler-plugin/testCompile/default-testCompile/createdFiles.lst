@@ -1,0 +1,6 @@
+com\sdet\base\BaseTest.class
+com\sdet\runner\CucumberTestRunner.class
+com\sdet\objectrepository\WordPressPhotoDirectoryPage.class
+com\sdet\objectrepository\WordPressDownloadPage.class
+com\sdet\stepdefinitions\WordPressStepDefinitions.class
+com\sdet\objectrepository\WordPressHomePage.class
